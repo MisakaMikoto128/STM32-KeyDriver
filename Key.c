@@ -39,20 +39,17 @@ void KeyPinSet(const KeyPin_t *keyoutpin, unsigned char value)
 
 KeyPin_t KeyInPins[MAX_READ_PIN_NUM] = {0};
 KeyPin_t KeySetPins[MAX_SET_PIN_NUM] = {0};
-//全部矩阵按键的当前状态
-//The current state of all matrix keys
-__IO KeyStateValue_t KeySta[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
-__IO int KeyPressTime[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
-__IO int KeyReleaseTime[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
-__IO unsigned char keybuf[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
 
 typedef struct _Key_t{
-    unsigned char KeyID;
-    unsigned char KeyState;
-    unsigned char KeyPressTime;
-    unsigned char KeyReleaseTime;
+    //current state of key
+    KeyStateValue_t State;
+    int PressTime;
+    int ReleaseTime;
     unsigned char KeyBuf;
 }Key_t;
+
+__IO Key_t KeyMat[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
+
 /**
  * @brief 
  *
@@ -77,9 +74,15 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
     {
         KeySetPins[i] = keysetpins[i];
     }
-    //初始化按键值位KEY_UP
     //Initialize the key value to KEY_UP
-    memset((void *)KeySta, (int)KEY_UP, sizeof(KeySta)); 
+    KeyMat * pKeyMat = (KeyMat *)KeyMat;
+    for (int i = 0; i < MAX_READ_PIN_NUM; i++)
+    {
+        pKeyMat[i].State = KEY_UP;
+        pKeyMat[i].PressTime = 0;
+        pKeyMat[i].ReleaseTime = 0;
+        pKeyMat[i].KeyBuf = 0;
+    }
     KeyGPIOConfig(readPiNum, setPinNum, keyinpins, keysetpins);
     return true;
 }
@@ -180,7 +183,7 @@ void KeyScan()
     //Move 4 keys in a row into the buffer
     for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++)
     {
-        keybuf[keyout][i] = (keybuf[keyout][i] << 1) | KeyPinRead(&KeyInPins[i]);
+        KeyMat[keyout][i].KeyBuf = (KeyMat[keyout][i].KeyBuf << 1) | KeyPinRead(&KeyInPins[i]);
     }
     //消抖后更新按键状态
     //Update key status after debouncing
@@ -188,54 +191,53 @@ void KeyScan()
     //Loop MATRIX_KEY_READ_PIN_NUM times for each row
     for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++) 
     {
-        if ((keybuf[keyout][i] & 0x0F) == 0x00)
+        if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x00)
         { //连续4次扫描值为0，即4*4ms内都是按下状态时，可认为按键已稳定的弹起
             //Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
-            KeyPressTime[keyout][i] = 0;
-            if (KeyReleaseTime[keyout][i] == 0)
+            KeyMat[keyout][i].PressTime = 0;
+            if (KeyMat[keyout][i].ReleaseTime == 0)
             {
-                KeySta[keyout][i] = KEY_UP;
+                KeyMat[keyout][i].State = KEY_UP;
                 INFO("keyup %d %d\r\n", keyout, i);
             }
 
-            if (KeyReleaseTime[keyout][i] < KEY_DOUBLECLICK_TIME)
+            if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME)
             {
-                KeyReleaseTime[keyout][i]++;
+                KeyMat[keyout][i].ReleaseTime++;
             }
         }
-        else if ((keybuf[keyout][i] & 0x0F) == 0x0F)
+        else if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x0F)
         { //连续4次扫描值为1，即4*4ms内都是弹起状态时，可认为按键已稳定的按下
             //Continuous 4 times scan value is 1, which means 4*4ms have been released, can be regarded as the key has been stable pressed
 
             //先检测是否连按
             //First check for double click
-            if (KeyReleaseTime[keyout][i] < KEY_DOUBLECLICK_TIME && KeyReleaseTime[keyout][i] != 0)
+            if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME && KeyMat[keyout][i].ReleaseTime != 0)
             {
-                KeySta[keyout][i] = KEY_DOUBLECLICK;
+                KeyMat[keyout][i].State = KEY_DOUBLECLICK;
                 INFO("keydoubleclick %d %d\r\n", keyout, i);
             }
-            KeyReleaseTime[keyout][i] = 0;
+            KeyMat[keyout][i].ReleaseTime = 0;
 
-            if (KeyPressTime[keyout][i] == 0)
+            if (KeyMat[keyout][i].PressTime == 0)
             {
-                KeySta[keyout][i] = KEY_DOWN;
+                KeyMat[keyout][i].State = KEY_DOWN;
                 INFO("keydown %d %d\r\n", keyout, i);
             }
 
-            if (KeyPressTime[keyout][i] >= KEY_LONG_PRESS_TIME)
+            if (KeyMat[keyout][i].PressTime >= KEY_LONG_PRESS_TIME)
             {
-                KeySta[keyout][i] = KEY_LONG_PRESS;
+                KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
             }
             else
             {
-                KeyPressTime[keyout][i]++;
+                KeyMat[keyout][i].PressTime++;
             }
         }
     }
     if (MATRIX_KEY_SET_PIN_NUM > 0)
     {
-        //执行下一次的扫描输出
         //Execute the next scan output
         keyout++;                                       //输出索引递增 //Output index increases
         keyout = keyout & (MATRIX_KEY_SET_PIN_NUM - 1); //索引值加到4即归零 //Index value added to 4, which becomes 0
