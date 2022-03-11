@@ -212,12 +212,12 @@ void KeyScan()
         { //连续4次扫描值为0，即4*4ms内都是按下状态时，可认为按键已稳定的弹起
             // Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
             KeyMat[keyout][i].PressTime = 0;
-            
+
             if (KeyMat[keyout][i].ReleaseTime == 0)
             {
                 KeyMat[keyout][i].State = KEY_UP;
                 INFO("keyup %d %d\r\n", keyout, i);
-                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                //Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
 
             if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME)
@@ -236,24 +236,25 @@ void KeyScan()
                 KeyMat[keyout][i].State = KEY_DOUBLECLICK;
                 INFO("keydoubleclick %d %d\r\n", keyout, i);
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+            }else{
+                if (KeyMat[keyout][i].PressTime == 0)
+                {
+                    KeyMat[keyout][i].State = KEY_DOWN;
+                    INFO("keydown %d %d\r\n", keyout, i);
+                    Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                }
             }
             KeyMat[keyout][i].ReleaseTime = 0;
 
-            if (KeyMat[keyout][i].PressTime == 0)
-            {
-                KeyMat[keyout][i].State = KEY_DOWN;
-                INFO("keydown %d %d\r\n", keyout, i);
-                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
-            }
+            
 
             if (KeyMat[keyout][i].PressTime < KEY_LONG_PRESS_TIME)
             {
-							KeyMat[keyout][i].PressTime++;
-                
+				KeyMat[keyout][i].PressTime++;
             }
             else if(KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
             {
-								KeyMat[keyout][i].PressTime++; //avoid repeat trigger
+				KeyMat[keyout][i].PressTime++; //avoid repeat trigger
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
