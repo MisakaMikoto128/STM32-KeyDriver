@@ -14,7 +14,7 @@ typedef struct {
 #define KEY_STATE_NUM 4
 
 typedef enum KEYID{
-    KEY1,
+    KEY1 = 0,
     KEY2,
     KEY3,
     KEY4,
