@@ -34,7 +34,8 @@ typedef enum KEYID{
 
 
 typedef enum KeyStateValue{
-    KEY_DOWN = 0,
+    KEY_NONE = -1,
+    KEY_DOWN = 0, //shoule be 0,because the implementation of the function KeyiState()
     KEY_UP,
     KEY_LONG_PRESS,
     KEY_DOUBLECLICK,
@@ -121,6 +122,18 @@ void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, cons
 void KeyScan();
 
 
+
+/* Key FIFO */
+#define KEY_FIFO_SIZE	10
+typedef struct
+{
+	KeyState_t Buf[KEY_FIFO_SIZE];		/* 键值缓冲区 */ /* Key value buffer */
+	uint8_t Read;					/* 缓冲区读指针1 */ /* Buffer read pointer 1 */
+	uint8_t Write;					/* 缓冲区写指针 */ /* Buffer write pointer */
+}KEY_FIFO_T;
+void Key_FIFO_Put(KeyState_t keystate)
+void Key_FIFO_Clear(void);
+KeyState_t Key_FIFO_Get(void);
 
 #endif /* KEY_H_ */
 

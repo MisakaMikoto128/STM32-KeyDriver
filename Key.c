@@ -3,6 +3,21 @@
 int MATRIX_KEY_READ_PIN_NUM = MAX_READ_PIN_NUM;
 int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
 
+
+/*
+
+--  --  --  -- Read0
+0|  1|  2|  3|
+--  --  --  -- Read1
+4|  5|  6|  7|
+--  --  --  -- Read2
+8|  9| 10| 11|
+--  --  --  -- Read3 MATRIX_KEY_READ_PIN_NUM
+ |   |   | 16|
+Set0 Set1 Set2 Set3
+MATRIX_KEY_SET_PIN_NUM
+
+*/
 /*
 当前被扫描行的按键全部拉低
 All keys of the currently scanned row are lowered level.
@@ -10,9 +25,9 @@ All keys of the currently scanned row are lowered level.
 unsigned char KeyPinRead(const KeyPin_t *keyinpin)
 {
 #if CHOOSE_KEW_ROW_LEVEL == 0
-return !(keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
+    return !(keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
 #else
-return (keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
+    return (keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
 #endif
 }
 
@@ -40,20 +55,21 @@ void KeyPinSet(const KeyPin_t *keyoutpin, unsigned char value)
 KeyPin_t KeyInPins[MAX_READ_PIN_NUM] = {0};
 KeyPin_t KeySetPins[MAX_SET_PIN_NUM] = {0};
 
-typedef struct _Key_t{
-    //current state of key
+typedef struct _Key_t
+{
+    // current state of key
     KeyStateValue_t State;
     int PressTime;
     int ReleaseTime;
     unsigned char KeyBuf;
-}Key_t;
+} Key_t;
 
-__IO Key_t KeyMat[MAX_READ_PIN_NUM][MAX_SET_PIN_NUM] = {0};
+__IO Key_t KeyMat[MAX_SET_PIN_NUM][MAX_READ_PIN_NUM] = {0};
 
 /**
- * @brief 
+ * @brief
  *
- * @param readPiNum  
+ * @param readPiNum
  * @param setPinNum
  * @param keyinpins
  * @param keysetpins
@@ -74,9 +90,9 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
     {
         KeySetPins[i] = keysetpins[i];
     }
-    //Initialize the key value to KEY_UP
-    KeyMat * pKeyMat = (KeyMat *)KeyMat;
-    for (int i = 0; i < MAX_READ_PIN_NUM; i++)
+    // Initialize the key value to KEY_UP
+    KeyMat *pKeyMat = (KeyMat *)KeyMat;
+    for (int i = 0; i < MAX_READ_PIN_NUM*MAX_SET_PIN_NUM; i++)
     {
         pKeyMat[i].State = KEY_UP;
         pKeyMat[i].PressTime = 0;
@@ -93,49 +109,50 @@ void enableKey_GPIO_CLK(const KeyPin_t *keygpio)
     {
         __HAL_RCC_GPIOA_CLK_ENABLE();
     }
-    #ifdef GPIOB
+#ifdef GPIOB
     else if (keygpio->GPIOx == GPIOB)
     {
         __HAL_RCC_GPIOB_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOC
+#endif
+#ifdef GPIOC
     else if (keygpio->GPIOx == GPIOC)
     {
         __HAL_RCC_GPIOC_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOD
+#endif
+#ifdef GPIOD
     else if (keygpio->GPIOx == GPIOD)
     {
         __HAL_RCC_GPIOD_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOE
+#endif
+#ifdef GPIOE
     else if (keygpio->GPIOx == GPIOE)
     {
         __HAL_RCC_GPIOE_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOF
+#endif
+#ifdef GPIOF
     else if (keygpio->GPIOx == GPIOF)
     {
         __HAL_RCC_GPIOF_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOG
+#endif
+#ifdef GPIOG
     else if (keygpio->GPIOx == GPIOG)
     {
         __HAL_RCC_GPIOG_CLK_ENABLE();
     }
-    #endif
-    #ifdef GPIOH
+#endif
+#ifdef GPIOH
     else if (keygpio->GPIOx == GPIOH)
     {
         __HAL_RCC_GPIOH_CLK_ENABLE();
     }
-    #endif
+#endif
 }
+
 void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyPin_t *keysetpins)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -175,30 +192,31 @@ void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, cons
 void KeyScan()
 {
     unsigned char i;
-    //矩阵按键扫描输出索引 
-    //Matrix key scanning output index
-    static unsigned char keyout = 0; 
+    //矩阵按键扫描输出索引
+    // Matrix key scanning output index
+    static unsigned char keyout = 0;
 
     //将一行的4个按键值移入缓冲区
-    //Move 4 keys in a row into the buffer
+    // Move 4 keys in a row into the buffer
     for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++)
     {
         KeyMat[keyout][i].KeyBuf = (KeyMat[keyout][i].KeyBuf << 1) | KeyPinRead(&KeyInPins[i]);
     }
     //消抖后更新按键状态
-    //Update key status after debouncing
+    // Update key status after debouncing
     //每行MATRIX_KEY_READ_PIN_NUM个按键，所以循环MATRIX_KEY_READ_PIN_NUM次
-    //Loop MATRIX_KEY_READ_PIN_NUM times for each row
-    for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++) 
+    // Loop MATRIX_KEY_READ_PIN_NUM times for each row
+    for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++)
     {
         if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x00)
         { //连续4次扫描值为0，即4*4ms内都是按下状态时，可认为按键已稳定的弹起
-            //Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
+            // Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
             KeyMat[keyout][i].PressTime = 0;
             if (KeyMat[keyout][i].ReleaseTime == 0)
             {
                 KeyMat[keyout][i].State = KEY_UP;
                 INFO("keyup %d %d\r\n", keyout, i);
+                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
 
             if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME)
@@ -208,14 +226,15 @@ void KeyScan()
         }
         else if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x0F)
         { //连续4次扫描值为1，即4*4ms内都是弹起状态时，可认为按键已稳定的按下
-            //Continuous 4 times scan value is 1, which means 4*4ms have been released, can be regarded as the key has been stable pressed
+            // Continuous 4 times scan value is 1, which means 4*4ms have been released, can be regarded as the key has been stable pressed
 
             //先检测是否连按
-            //First check for double click
+            // First check for double click
             if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME && KeyMat[keyout][i].ReleaseTime != 0)
             {
                 KeyMat[keyout][i].State = KEY_DOUBLECLICK;
                 INFO("keydoubleclick %d %d\r\n", keyout, i);
+                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
             KeyMat[keyout][i].ReleaseTime = 0;
 
@@ -223,12 +242,14 @@ void KeyScan()
             {
                 KeyMat[keyout][i].State = KEY_DOWN;
                 INFO("keydown %d %d\r\n", keyout, i);
+                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
 
             if (KeyMat[keyout][i].PressTime >= KEY_LONG_PRESS_TIME)
             {
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
+                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
             else
             {
@@ -238,7 +259,7 @@ void KeyScan()
     }
     if (MATRIX_KEY_SET_PIN_NUM > 0)
     {
-        //Execute the next scan output
+        // Execute the next scan output
         keyout++;                                       //输出索引递增 //Output index increases
         keyout = keyout & (MATRIX_KEY_SET_PIN_NUM - 1); //索引值加到4即归零 //Index value added to 4, which becomes 0
         for (i = 0; i < MATRIX_KEY_SET_PIN_NUM; i++)
@@ -246,4 +267,49 @@ void KeyScan()
             KeyPinSet(&KeySetPins[i], (unsigned char)(i == keyout));
         }
     }
+}
+
+/*  Key FIFO */
+static KEY_FIFO_T s_tKey; /* Key FIFO */
+/**
+ * @brief put a key state value to the key fifo
+ *
+ * @param keystate key state value
+ */
+void Key_FIFO_Put(KeyState_t keystate)
+{
+    s_tKey.Buf[s_tKey.Write] = keystate;
+
+    if (++s_tKey.Write >= KEY_FIFO_SIZE)
+    {
+        s_tKey.Write = 0;
+    }
+}
+/**
+ * @brief clear the key fifo
+ *
+ */
+void Key_FIFO_Clear(void)
+{
+    s_tKey.Read = s_tKey.Write;
+}
+/**
+ * @brief read and pop a key state value from the key fifo
+ *
+ * @return KeyState_t key state value
+ */
+KeyState_t Key_FIFO_Get(void)
+{
+    KeyState_t ret = KEY_NONE;
+
+    if (s_tKey.Read != s_tKey.Write)
+    {
+        ret = s_tKey.Buf[s_tKey.Read];
+
+        if (++s_tKey.Read >= KEY_FIFO_SIZE)
+        {
+            s_tKey.Read = 0;
+        }
+    }
+    return ret;
 }
