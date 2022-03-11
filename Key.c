@@ -91,7 +91,7 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
         KeySetPins[i] = keysetpins[i];
     }
     // Initialize the key value to KEY_UP
-    KeyMat *pKeyMat = (KeyMat *)KeyMat;
+    Key_t *pKeyMat = (Key_t *)&KeyMat;
     for (int i = 0; i < MAX_READ_PIN_NUM*MAX_SET_PIN_NUM; i++)
     {
         pKeyMat[i].State = KEY_UP;
@@ -212,6 +212,7 @@ void KeyScan()
         { //连续4次扫描值为0，即4*4ms内都是按下状态时，可认为按键已稳定的弹起
             // Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
             KeyMat[keyout][i].PressTime = 0;
+            
             if (KeyMat[keyout][i].ReleaseTime == 0)
             {
                 KeyMat[keyout][i].State = KEY_UP;
@@ -245,15 +246,17 @@ void KeyScan()
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
 
-            if (KeyMat[keyout][i].PressTime >= KEY_LONG_PRESS_TIME)
+            if (KeyMat[keyout][i].PressTime < KEY_LONG_PRESS_TIME)
             {
+							KeyMat[keyout][i].PressTime++;
+                
+            }
+            else if(KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
+            {
+								KeyMat[keyout][i].PressTime++; //avoid repeat trigger
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
-            }
-            else
-            {
-                KeyMat[keyout][i].PressTime++;
             }
         }
     }
@@ -312,4 +315,9 @@ KeyState_t Key_FIFO_Get(void)
         }
     }
     return ret;
+}
+
+bool isKeyFIFOEmpty(void)
+{
+    return (s_tKey.Read == s_tKey.Write);
 }
