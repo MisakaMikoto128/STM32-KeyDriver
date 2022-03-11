@@ -135,5 +135,7 @@ void Key_FIFO_Put(KeyState_t keystate);
 void Key_FIFO_Clear(void);
 KeyState_t Key_FIFO_Get(void);
 bool isKeyFIFOEmpty(void);
+inline void enable_key_up_envent(bool enable);
+inline void disable_key_up_envent(void);
 #endif /* KEY_H_ */
 

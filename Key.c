@@ -2,6 +2,7 @@
 
 int MATRIX_KEY_READ_PIN_NUM = MAX_READ_PIN_NUM;
 int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
+bool enable_key_up_envent_flag = false;
 
 
 /*
@@ -217,7 +218,9 @@ void KeyScan()
             {
                 KeyMat[keyout][i].State = KEY_UP;
                 INFO("keyup %d %d\r\n", keyout, i);
-                //Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                if(enable_key_up_envent_flag){
+                    Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                }
             }
 
             if (KeyMat[keyout][i].ReleaseTime < KEY_DOUBLECLICK_TIME)
@@ -321,4 +324,14 @@ KeyState_t Key_FIFO_Get(void)
 bool isKeyFIFOEmpty(void)
 {
     return (s_tKey.Read == s_tKey.Write);
+}
+
+inline void enable_key_up_envent(bool enable)
+{
+    enable_key_up_envent_flag = enable;
+}
+
+inline void disable_key_up_envent(void)
+{
+    enable_key_up_envent_flag = false;
 }
