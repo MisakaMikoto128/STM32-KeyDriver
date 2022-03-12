@@ -257,7 +257,7 @@ void KeyScan()
             }
             else if(KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
             {
-								KeyMat[keyout][i].PressTime=KEY_LONG_PRESS_TIME/4*3; //avoid repeat trigger
+				KeyMat[keyout][i].PressTime=KEY_LONG_PRESS_TIME/4*3; //avoid repeat trigger
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));

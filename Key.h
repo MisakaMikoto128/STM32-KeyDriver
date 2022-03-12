@@ -5,13 +5,13 @@
 #include <stdbool.h>
 #include <string.h>
 #include "gpio.h"
-#define MAX_READ_PIN_NUM 4
-#define MAX_SET_PIN_NUM 4
+#define MAX_READ_PIN_NUM 4UL
+#define MAX_SET_PIN_NUM 4UL
 typedef struct {
 	GPIO_TypeDef* GPIOx;
 	uint16_t GPIO_Pin;
 }KeyPin_t;
-#define KEY_STATE_NUM 4
+#define KEY_STATE_NUM 4UL
 
 typedef enum KEYID{
     KEY1 = 0,
@@ -108,7 +108,7 @@ typedef enum KeyState{
     KEY16_DoubleClick,
 }KeyState_t;
 
-#define KeyiState(key_id,state) (key_id*KEY_STATE_NUM+state)
+#define KeyiState(key_id,state) ((uint32_t)(key_id)*(KEY_STATE_NUM)+(state))
 
 #define KEY_LONG_PRESS_TIME 800 /* unit:ms, hold for 1s and consider it a long press*/
 #define KEY_DOUBLECLICK_TIME 40 /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
@@ -119,7 +119,7 @@ typedef enum KeyState{
 #define KEY_FILTER_2TIMES 0x03
 #define KEY_FILTER_3TIMES 0x07
 #define KEY_FILTER_4TIMES 0x0F
-#define KEY_FILTER_TIMES KEY_FILTER_2TIMES
+#define KEY_FILTER_TIMES KEY_FILTER_4TIMES
 
 #define INFO(__fmt, ...) //printf("[%s:%d] "__fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 bool KeyInit(int readPiNum,int setPinNum,const KeyPin_t * keyinpins,const KeyPin_t * keysetpins);
@@ -129,7 +129,7 @@ void KeyScan();
 
 
 /* Key FIFO */
-#define KEY_FIFO_SIZE	10
+#define KEY_FIFO_SIZE	10UL
 typedef struct
 {
 	KeyState_t Buf[KEY_FIFO_SIZE];		/* 键值缓冲区 */ /* Key value buffer */
@@ -142,5 +142,6 @@ KeyState_t Key_FIFO_Get(void);
 bool isKeyFIFOEmpty(void);
 inline void enable_key_up_envent(bool enable);
 inline void disable_key_up_envent(void);
+void KeyDriver();
 #endif /* KEY_H_ */
 
