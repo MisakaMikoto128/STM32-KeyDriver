@@ -209,7 +209,7 @@ void KeyScan()
     // Loop MATRIX_KEY_READ_PIN_NUM times for each row
     for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++)
     {
-        if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x00)
+        if ((KeyMat[keyout][i].KeyBuf & KEY_FILTER_TIMES) == 0x00)
         { //连续4次扫描值为0，即4*4ms内都是按下状态时，可认为按键已稳定的弹起
             // Continuous 4 times scan value is 0, which means 4*4ms have been pressed, can be regarded as the key has been stable released
             KeyMat[keyout][i].PressTime = 0;
@@ -228,7 +228,7 @@ void KeyScan()
                 KeyMat[keyout][i].ReleaseTime++;
             }
         }
-        else if ((KeyMat[keyout][i].KeyBuf & 0x0F) == 0x0F)
+        else if ((KeyMat[keyout][i].KeyBuf & KEY_FILTER_TIMES) == KEY_FILTER_TIMES)
         { //连续4次扫描值为1，即4*4ms内都是弹起状态时，可认为按键已稳定的按下
             // Continuous 4 times scan value is 1, which means 4*4ms have been released, can be regarded as the key has been stable pressed
 
@@ -257,7 +257,7 @@ void KeyScan()
             }
             else if(KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
             {
-				KeyMat[keyout][i].PressTime++; //avoid repeat trigger
+								KeyMat[keyout][i].PressTime=KEY_LONG_PRESS_TIME/4*3; //avoid repeat trigger
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
                 Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));

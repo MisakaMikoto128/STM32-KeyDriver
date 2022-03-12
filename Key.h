@@ -110,11 +110,16 @@ typedef enum KeyState{
 
 #define KeyiState(key_id,state) (key_id*KEY_STATE_NUM+state)
 
-#define KEY_LONG_PRESS_TIME 1000 /* unit:ms, hold for 1s and consider it a long press*/
-#define KEY_DOUBLECLICK_TIME 100 /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
+#define KEY_LONG_PRESS_TIME 800 /* unit:ms, hold for 1s and consider it a long press*/
+#define KEY_DOUBLECLICK_TIME 40 /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
 
 #define CHOOSE_KEW_ROW_LEVEL 0
 
+#define KEY_FILTER_1TIMES 0x01
+#define KEY_FILTER_2TIMES 0x03
+#define KEY_FILTER_3TIMES 0x07
+#define KEY_FILTER_4TIMES 0x0F
+#define KEY_FILTER_TIMES KEY_FILTER_2TIMES
 
 #define INFO(__fmt, ...) //printf("[%s:%d] "__fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 bool KeyInit(int readPiNum,int setPinNum,const KeyPin_t * keyinpins,const KeyPin_t * keysetpins);
