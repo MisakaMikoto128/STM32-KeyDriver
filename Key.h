@@ -110,8 +110,9 @@ typedef enum KeyState{
 
 #define KeyiState(key_id,state) ((uint32_t)(key_id)*(KEY_STATE_NUM)+(state))
 
-#define KEY_LONG_PRESS_TIME 800 /* unit:ms, hold for 1s and consider it a long press*/
-#define KEY_DOUBLECLICK_TIME 40 /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
+#define KEY_LONG_PRESS_TIME (500/2) /* unit:ms, hold for KEY_LONG_PRESS_TIME ms and consider it a long press*/
+#define KEY_LONG_PRESS_CONTINUE_TIME (KEY_LONG_PRESS_TIME/7*6) /* unit:ms, can't bigger than KEY_LONG_PRESS_TIME*/
+#define KEY_DOUBLECLICK_TIME (10) /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
 
 #define CHOOSE_KEW_ROW_LEVEL 0
 
