@@ -108,13 +108,13 @@ typedef enum KeyState{
     KEY16_DoubleClick,
 }KeyState_t;
 
-#define KeyiState(key_id,state) ((uint32_t)(key_id)*(KEY_STATE_NUM)+(state))
+#define KeyiState(key_id,state) ((KeyState_t)((int32_t)(key_id)*(KEY_STATE_NUM)+(int32_t)(state)))
 
 #define KEY_LONG_PRESS_TIME (500/2) /* unit:ms, hold for KEY_LONG_PRESS_TIME ms and consider it a long press*/
 #define KEY_LONG_PRESS_CONTINUE_TIME (KEY_LONG_PRESS_TIME/7*6) /* unit:ms, can't bigger than KEY_LONG_PRESS_TIME*/
 #define KEY_DOUBLECLICK_TIME (10) /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
 
-#define CHOOSE_KEW_ROW_LEVEL 0
+#define CHOOSE_KEW_ROW_LEVEL 0  // 0: when key is pressed, key input is low level
 
 #define KEY_FILTER_1TIMES 0x01
 #define KEY_FILTER_2TIMES 0x03

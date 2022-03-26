@@ -95,7 +95,7 @@ int main(void)
 	//only one key examle,read pin pullup,and key com pin connect to GND
   KeyPin_t keyinpins[1] = {{GPIOA, GPIO_PIN_0}};
   KeyInit(1, 0, keyinpins, NULL);
-  KeyStateValue_t key = KEY_NONE;
+  KeyState_t key = KEY_NONE;
   /* USER CODE END 2 */
 
   /* Infinite loop */

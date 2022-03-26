@@ -4,7 +4,7 @@ int MATRIX_KEY_READ_PIN_NUM = MAX_READ_PIN_NUM;
 int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
 bool enable_key_up_envent_flag = false;
 
-
+#define GPIO_NUMBER           (16U)
 /*
 
 --  --  --  -- Read0
@@ -17,7 +17,7 @@ bool enable_key_up_envent_flag = false;
  |   |   | 16|
 Set0 Set1 Set2 Set3
 MATRIX_KEY_SET_PIN_NUM
-
+key gpio init should be init before keyscan.
 */
 /*
 当前被扫描行的按键全部拉低
@@ -44,10 +44,10 @@ void KeyPinSet(const KeyPin_t *keyoutpin, unsigned char value)
     if (!value)
         keyoutpin->GPIOx->BSRR = keyoutpin->GPIO_Pin;
     else
-        keyoutpin->GPIOx->BRR = keyoutpin->GPIO_Pin;
+        keyoutpin->GPIOx->BSRR = (uint32_t)keyoutpin->GPIO_Pin << GPIO_NUMBER;
 #else
     if (!value)
-        keyoutpin->GPIOx->BRR = keyoutpin->GPIO_Pin;
+        keyoutpin->GPIOx->BSRR = (uint32_t)keyoutpin->GPIO_Pin << GPIO_NUMBER;
     else
         keyoutpin->GPIOx->BSRR = keyoutpin->GPIO_Pin;
 #endif
@@ -65,7 +65,7 @@ typedef struct _Key_t
     unsigned char KeyBuf;
 } Key_t;
 
-__IO Key_t KeyMat[MAX_SET_PIN_NUM][MAX_READ_PIN_NUM] = {0};
+__IO Key_t KeyMat[MAX_SET_PIN_NUM][MAX_READ_PIN_NUM];
 
 /**
  * @brief
@@ -82,7 +82,7 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
     if (readPiNum > MAX_READ_PIN_NUM || setPinNum > MAX_SET_PIN_NUM)
         return false;
     MATRIX_KEY_READ_PIN_NUM = readPiNum;
-    MATRIX_KEY_SET_PIN_NUM = setPinNum;
+    MATRIX_KEY_SET_PIN_NUM = setPinNum == 0 ? 1 : setPinNum;
     for (int i = 0; i < readPiNum; i++)
     {
         KeyInPins[i] = keyinpins[i];
@@ -249,8 +249,6 @@ void KeyScan()
             }
             KeyMat[keyout][i].ReleaseTime = 0;
 
-            
-
             if (KeyMat[keyout][i].PressTime < KEY_LONG_PRESS_TIME)
             {
 				KeyMat[keyout][i].PressTime++;
@@ -264,7 +262,7 @@ void KeyScan()
             }
         }
     }
-    if (MATRIX_KEY_SET_PIN_NUM > 0)
+    if (MATRIX_KEY_SET_PIN_NUM > 1) //Scan only if there are more than one line
     {
         // Execute the next scan output
         keyout++;                                       //输出索引递增 //Output index increases
