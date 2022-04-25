@@ -3,6 +3,7 @@
 int MATRIX_KEY_READ_PIN_NUM = MAX_READ_PIN_NUM;
 int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
 bool enable_key_up_envent_flag = false;
+bool key_gpio_configed = false;
 
 #define GPIO_NUMBER           (16U)
 /*
@@ -101,7 +102,8 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
         pKeyMat[i].KeyBuf = 0;
     }
     KeyGPIOConfig(readPiNum, setPinNum, keyinpins, keysetpins);
-    return true;
+    set_key_gpio_configed(true);
+    return get_key_gpio_configed();
 }
 
 void enableKey_GPIO_CLK(const KeyPin_t *keygpio)
@@ -193,17 +195,19 @@ void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, cons
 void KeyScan()
 {
     unsigned char i;
-    //矩阵按键扫描输出索引
     // Matrix key scanning output index
     static unsigned char keyout = 0;
 
-    //将一行的4个按键值移入缓冲区
-    // Move 4 keys in a row into the buffer
+    //sure the key gpio is configed before scan
+    if(get_key_gpio_configed() == false)
+        return;
+
+    // Move MATRIX_KEY_READ_PIN_NUM keys in a row into the buffer
     for (i = 0; i < MATRIX_KEY_READ_PIN_NUM; i++)
     {
         KeyMat[keyout][i].KeyBuf = (KeyMat[keyout][i].KeyBuf << 1) | KeyPinRead(&KeyInPins[i]);
     }
-    //消抖后更新按键状态
+
     // Update key status after debouncing
     //每行MATRIX_KEY_READ_PIN_NUM个按键，所以循环MATRIX_KEY_READ_PIN_NUM次
     // Loop MATRIX_KEY_READ_PIN_NUM times for each row
@@ -326,6 +330,8 @@ bool isKeyFIFOEmpty(void)
     return (s_tKey.Read == s_tKey.Write);
 }
 
+
+
 inline void enable_key_up_envent(bool enable)
 {
     enable_key_up_envent_flag = enable;
@@ -334,4 +340,14 @@ inline void enable_key_up_envent(bool enable)
 inline void disable_key_up_envent(void)
 {
     enable_key_up_envent_flag = false;
+}
+
+inline void set_key_gpio_configed(bool flag)
+{
+    key_gpio_configed = flag;
+}
+
+inline void get_key_gpio_configed()
+{
+    return key_gpio_configed;
 }
