@@ -5,7 +5,7 @@ int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
 bool enable_key_up_envent_flag = false;
 bool key_gpio_configed = false;
 
-#define GPIO_NUMBER           (16U)
+#define GPIO_NUMBER (16U)
 /*
 
 --  --  --  -- Read0
@@ -94,7 +94,7 @@ bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyP
     }
     // Initialize the key value to KEY_UP
     Key_t *pKeyMat = (Key_t *)&KeyMat;
-    for (int i = 0; i < MAX_READ_PIN_NUM*MAX_SET_PIN_NUM; i++)
+    for (int i = 0; i < MAX_READ_PIN_NUM * MAX_SET_PIN_NUM; i++)
     {
         pKeyMat[i].State = KEY_UP;
         pKeyMat[i].PressTime = 0;
@@ -198,8 +198,8 @@ void KeyScan()
     // Matrix key scanning output index
     static unsigned char keyout = 0;
 
-    //sure the key gpio is configed before scan
-    if(get_key_gpio_configed() == false)
+    // sure the key gpio is configed before scan
+    if (get_key_gpio_configed() == false)
         return;
 
     // Move MATRIX_KEY_READ_PIN_NUM keys in a row into the buffer
@@ -222,8 +222,9 @@ void KeyScan()
             {
                 KeyMat[keyout][i].State = KEY_UP;
                 INFO("keyup %d %d\r\n", keyout, i);
-                if(enable_key_up_envent_flag){
-                    Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                if (enable_key_up_envent_flag)
+                {
+                    Key_FIFO_Put(KeyiState(i * MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
                 }
             }
 
@@ -242,35 +243,38 @@ void KeyScan()
             {
                 KeyMat[keyout][i].State = KEY_DOUBLECLICK;
                 INFO("keydoubleclick %d %d\r\n", keyout, i);
-                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
-            }else{
+                Key_FIFO_Put(KeyiState(i * MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+            }
+            else
+            {
                 if (KeyMat[keyout][i].PressTime == 0)
                 {
                     KeyMat[keyout][i].State = KEY_DOWN;
                     INFO("keydown %d %d\r\n", keyout, i);
-                    Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                    Key_FIFO_Put(KeyiState(i * MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
                 }
             }
             KeyMat[keyout][i].ReleaseTime = 0;
 
             if (KeyMat[keyout][i].PressTime < KEY_LONG_PRESS_TIME)
             {
-				KeyMat[keyout][i].PressTime++;
+                KeyMat[keyout][i].PressTime++;
             }
-            else if(KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
+            else if (KeyMat[keyout][i].PressTime == KEY_LONG_PRESS_TIME)
             {
-				KeyMat[keyout][i].PressTime=KEY_LONG_PRESS_CONTINUE_TIME; //avoid repeat trigger
+                KeyMat[keyout][i].PressTime = KEY_LONG_PRESS_CONTINUE_TIME; // avoid repeat trigger
                 KeyMat[keyout][i].State = KEY_LONG_PRESS;
                 INFO("keylongpress %d %d\r\n", keyout, i);
-                Key_FIFO_Put(KeyiState(i*MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
+                Key_FIFO_Put(KeyiState(i * MATRIX_KEY_SET_PIN_NUM + keyout, KeyMat[keyout][i].State));
             }
         }
     }
-    if (MATRIX_KEY_SET_PIN_NUM > 1) //Scan only if there are more than one line
+    if (MATRIX_KEY_SET_PIN_NUM > 1) // Scan only if there are more than one line
     {
         // Execute the next scan output
-        keyout++;                                       //输出索引递增 //Output index increases
-        if(keyout > (MATRIX_KEY_SET_PIN_NUM - 1)){//Index value added to MATRIX_KEY_SET_PIN_NUM - 1, which becomes 0
+        keyout++; //输出索引递增 //Output index increases
+        if (keyout > (MATRIX_KEY_SET_PIN_NUM - 1))
+        { // Index value added to MATRIX_KEY_SET_PIN_NUM - 1, which becomes 0
             keyout = 0;
         }
         for (i = 0; i < MATRIX_KEY_SET_PIN_NUM; i++)
@@ -329,8 +333,6 @@ bool isKeyFIFOEmpty(void)
 {
     return (s_tKey.Read == s_tKey.Write);
 }
-
-
 
 inline void enable_key_up_envent(bool enable)
 {

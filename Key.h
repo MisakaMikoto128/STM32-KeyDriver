@@ -7,13 +7,15 @@
 #include "gpio.h"
 #define MAX_READ_PIN_NUM 4UL
 #define MAX_SET_PIN_NUM 4UL
-typedef struct {
-	GPIO_TypeDef* GPIOx;
-	uint16_t GPIO_Pin;
-}KeyPin_t;
+typedef struct
+{
+    GPIO_TypeDef *GPIOx;
+    uint16_t GPIO_Pin;
+} KeyPin_t;
 #define KEY_STATE_NUM 4UL
 
-typedef enum KEYID{
+typedef enum KEYID
+{
     KEY1 = 0,
     KEY2,
     KEY3,
@@ -30,17 +32,18 @@ typedef enum KEYID{
     KEY14,
     KEY15,
     KEY16,
-}KEYID_t;
+} KEYID_t;
 
-
-typedef enum KeyStateValue{
-    KEY_DOWN = 0, //shoule be 0,because the implementation of the function KeyiState()
+typedef enum KeyStateValue
+{
+    KEY_DOWN = 0, // shoule be 0,because the implementation of the function KeyiState()
     KEY_UP,
     KEY_LONG_PRESS,
     KEY_DOUBLECLICK,
-}KeyStateValue_t;
+} KeyStateValue_t;
 
-typedef enum KeyState{
+typedef enum KeyState
+{
     KEY_NONE = -1,
     KEY1_Down = 0,
     KEY1_Up,
@@ -106,15 +109,15 @@ typedef enum KeyState{
     KEY16_Up,
     KEY16_LongPress,
     KEY16_DoubleClick,
-}KeyState_t;
+} KeyState_t;
 
-#define KeyiState(key_id,state) ((KeyState_t)((int32_t)(key_id)*(KEY_STATE_NUM)+(int32_t)(state)))
+#define KeyiState(key_id, state) ((KeyState_t)((int32_t)(key_id) * (KEY_STATE_NUM) + (int32_t)(state)))
 
-#define KEY_LONG_PRESS_TIME (500/2) /* unit:ms, hold for KEY_LONG_PRESS_TIME ms and consider it a long press*/
-#define KEY_LONG_PRESS_CONTINUE_TIME (KEY_LONG_PRESS_TIME/7*6) /* unit:ms, can't bigger than KEY_LONG_PRESS_TIME*/
-#define KEY_DOUBLECLICK_TIME (10) /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
+#define KEY_LONG_PRESS_TIME (500 / 2)                              /* unit:ms, hold for KEY_LONG_PRESS_TIME ms and consider it a long press*/
+#define KEY_LONG_PRESS_CONTINUE_TIME (KEY_LONG_PRESS_TIME / 7 * 6) /* unit:ms, can't bigger than KEY_LONG_PRESS_TIME*/
+#define KEY_DOUBLECLICK_TIME (10)                                  /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
 
-#define CHOOSE_KEW_ROW_LEVEL 0  // 0: when key is pressed, key input is low level
+#define CHOOSE_KEW_ROW_LEVEL 0 // 0: when key is pressed, key input is low level
 
 #define KEY_FILTER_1TIMES 0x01
 #define KEY_FILTER_2TIMES 0x03
@@ -122,27 +125,26 @@ typedef enum KeyState{
 #define KEY_FILTER_4TIMES 0x0F
 #define KEY_FILTER_TIMES KEY_FILTER_4TIMES
 
-#define INFO(__fmt, ...) //printf("[%s:%d] "__fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-bool KeyInit(int readPiNum,int setPinNum,const KeyPin_t * keyinpins,const KeyPin_t * keysetpins);
+#define INFO(__fmt, ...) // printf("[%s:%d] "__fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+bool KeyInit(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyPin_t *keysetpins);
 void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, const KeyPin_t *keysetpins);
 void KeyScan();
 
-
-
 /* Key FIFO */
-#define KEY_FIFO_SIZE	10UL
+#define KEY_FIFO_SIZE 10UL
 typedef struct
 {
-	KeyState_t Buf[KEY_FIFO_SIZE];		/* 键值缓冲区 */ /* Key value buffer */
-	uint8_t Read;					/* 缓冲区读指针1 */ /* Buffer read pointer 1 */
-	uint8_t Write;					/* 缓冲区写指针 */ /* Buffer write pointer */
-}KEY_FIFO_T;
+    KeyState_t Buf[KEY_FIFO_SIZE]; /* 键值缓冲区 */ /* Key value buffer */
+    uint8_t Read; /* 缓冲区读指针1 */               /* Buffer read pointer 1 */
+    uint8_t Write; /* 缓冲区写指针 */               /* Buffer write pointer */
+} KEY_FIFO_T;
 void Key_FIFO_Put(KeyState_t keystate);
 void Key_FIFO_Clear(void);
 KeyState_t Key_FIFO_Get(void);
 bool isKeyFIFOEmpty(void);
 void enable_key_up_envent(bool enable);
 void disable_key_up_envent(void);
+void set_key_gpio_configed(bool flag);
+void get_key_gpio_configed();
 void KeyDriver();
 #endif /* KEY_H_ */
-
