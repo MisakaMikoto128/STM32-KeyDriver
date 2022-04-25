@@ -12,7 +12,7 @@ typedef struct
     GPIO_TypeDef *GPIOx;
     uint16_t GPIO_Pin;
 } KeyPin_t;
-#define KEY_STATE_NUM 4UL
+
 
 typedef enum KEYID
 {
@@ -34,6 +34,7 @@ typedef enum KEYID
     KEY16,
 } KEYID_t;
 
+#define KEY_STATE_NUM 4UL
 typedef enum KeyStateValue
 {
     KEY_DOWN = 0, // shoule be 0,because the implementation of the function KeyiState()
