@@ -266,7 +266,9 @@ void KeyScan()
     {
         // Execute the next scan output
         keyout++;                                       //输出索引递增 //Output index increases
-        keyout = keyout & (MATRIX_KEY_SET_PIN_NUM - 1); //索引值加到4即归零 //Index value added to 4, which becomes 0
+        if(keyout > (MATRIX_KEY_SET_PIN_NUM - 1)){//Index value added to MATRIX_KEY_SET_PIN_NUM - 1, which becomes 0
+            keyout = 0;
+        }
         for (i = 0; i < MATRIX_KEY_SET_PIN_NUM; i++)
         {
             KeyPinSet(&KeySetPins[i], (unsigned char)(i == keyout));
