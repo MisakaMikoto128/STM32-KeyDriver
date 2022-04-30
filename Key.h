@@ -146,6 +146,6 @@ bool isKeyFIFOEmpty(void);
 void enable_key_up_envent(bool enable);
 void disable_key_up_envent(void);
 void set_key_gpio_configed(bool flag);
-void get_key_gpio_configed();
+bool get_key_gpio_configed();
 void KeyDriver();
 #endif /* KEY_H_ */

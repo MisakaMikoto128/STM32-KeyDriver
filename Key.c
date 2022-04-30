@@ -349,7 +349,7 @@ inline void set_key_gpio_configed(bool flag)
     key_gpio_configed = flag;
 }
 
-inline void get_key_gpio_configed()
+inline bool get_key_gpio_configed()
 {
     return key_gpio_configed;
 }
