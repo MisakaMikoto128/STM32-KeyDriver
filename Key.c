@@ -5,6 +5,13 @@ int MATRIX_KEY_SET_PIN_NUM = MAX_SET_PIN_NUM;
 bool enable_key_up_envent_flag = false;
 bool key_gpio_configed = false;
 
+static const char _4x4MatrixKeyboard_KeyMap[4][4] = {
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'},
+};
+
 #define GPIO_NUMBER (16U)
 /*
 
@@ -311,7 +318,7 @@ void Key_FIFO_Clear(void)
 /**
  * @brief read and pop a key state value from the key fifo
  *
- * @return KeyState_t key state value
+ * @return KeyState_t key state value,if have no value return KEY_NONE
  */
 KeyState_t Key_FIFO_Get(void)
 {
@@ -321,6 +328,28 @@ KeyState_t Key_FIFO_Get(void)
     {
         ret = s_tKey.Buf[s_tKey.Read];
 
+        if (++s_tKey.Read >= KEY_FIFO_SIZE)
+        {
+            s_tKey.Read = 0;
+        }
+    }
+    return ret;
+}
+
+
+/**
+ * @brief read and pop a key state value from the key fifo
+ *
+ * @return 4x4 matrix keybord's key value,if have no value return 0
+ */
+char Key_FIFO_Get4x4ASCII(void)
+{
+    char ret = '\0';
+    KeyState_t key_value = KEY_NONE;
+    if (s_tKey.Read != s_tKey.Write)
+    {
+        key_value = s_tKey.Buf[s_tKey.Read];
+        ret = ((char*)&_4x4MatrixKeyboard_KeyMap)[key_value/KEY_STATE_NUM];
         if (++s_tKey.Read >= KEY_FIFO_SIZE)
         {
             s_tKey.Read = 0;

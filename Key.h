@@ -43,6 +43,7 @@ typedef enum KeyStateValue
     KEY_DOUBLECLICK,
 } KeyStateValue_t;
 
+#define KEY_ASCII_NONE ((char)0xFF)
 typedef enum KeyState
 {
     KEY_NONE = -1,
@@ -142,6 +143,7 @@ typedef struct
 void Key_FIFO_Put(KeyState_t keystate);
 void Key_FIFO_Clear(void);
 KeyState_t Key_FIFO_Get(void);
+char Key_FIFO_Get4x4ASCII(void);
 bool isKeyFIFOEmpty(void);
 void enable_key_up_envent(bool enable);
 void disable_key_up_envent(void);
