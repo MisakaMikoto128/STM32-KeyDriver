@@ -119,7 +119,7 @@ typedef enum KeyState
 #define KEY_LONG_PRESS_CONTINUE_TIME (KEY_LONG_PRESS_TIME / 7 * 6) /* unit:ms, can't bigger than KEY_LONG_PRESS_TIME*/
 #define KEY_DOUBLECLICK_TIME (10)                                  /* unit:ms, press it twice for less than 0.1s, it is considered as double - click*/
 
-#define CHOOSE_KEW_ROW_LEVEL 0 // 0: when key is pressed, key input is low level
+#define KEY_INPUT_VALID_LEVEL 0 // 0: when key is pressed, key input is low level
 
 #define KEY_FILTER_1TIMES 0x01
 #define KEY_FILTER_2TIMES 0x03

@@ -33,7 +33,7 @@ All keys of the currently scanned row are lowered level.
 */
 unsigned char KeyPinRead(const KeyPin_t *keyinpin)
 {
-#if CHOOSE_KEW_ROW_LEVEL == 0
+#if KEY_INPUT_VALID_LEVEL == 0
     return !(keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
 #else
     return (keyinpin->GPIOx->IDR & keyinpin->GPIO_Pin);
@@ -48,7 +48,7 @@ unsigned char KeyPinRead(const KeyPin_t *keyinpin)
  */
 void KeyPinSet(const KeyPin_t *keyoutpin, unsigned char value)
 {
-#if CHOOSE_KEW_ROW_LEVEL == 0
+#if KEY_INPUT_VALID_LEVEL == 0
     if (!value)
         keyoutpin->GPIOx->BSRR = keyoutpin->GPIO_Pin;
     else
@@ -179,7 +179,7 @@ void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, cons
 
     /*Configure input GPIO pin*/
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-#if CHOOSE_KEW_ROW_LEVEL == 0
+#if KEY_INPUT_VALID_LEVEL == 0
 		GPIO_InitStruct.Pull = GPIO_PULLUP;
 #else
 		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
