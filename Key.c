@@ -179,7 +179,11 @@ void KeyGPIOConfig(int readPiNum, int setPinNum, const KeyPin_t *keyinpins, cons
 
     /*Configure input GPIO pin*/
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_PULLUP;
+#if CHOOSE_KEW_ROW_LEVEL == 0
+		GPIO_InitStruct.Pull = GPIO_PULLUP;
+#else
+		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+#endif
     for (i = 0; i < readPiNum; i++)
     {
         GPIO_InitStruct.Pin = keyinpins[i].GPIO_Pin;
